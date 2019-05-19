@@ -26,24 +26,26 @@ ADC_HandleTypeDef ADC1_Handler;     //ADC句柄;
 
 
 static uint16_t Adc[ChanSum-1];
+uint16_t adc_Queue[100];
+
 uint32_t ADSum = 0;
 uint8_t ADTick = 0;
-
+uint8_t adc_cnt = 0;
 
 
 void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 {
 	GPIO_InitTypeDef GPIO_InitStruct;
   
-    __HAL_RCC_GPIOC_CLK_ENABLE(); 
+    __HAL_RCC_GPIOA_CLK_ENABLE(); 
     __HAL_RCC_ADC1_CLK_ENABLE();
     GPIO_InitStruct.Pin  = GPIO_PIN_0;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     
-//    HAL_NVIC_SetPriority(ADC_IRQn, 1, 4);
-//    HAL_NVIC_EnableIRQ(ADC_IRQn);
+    HAL_NVIC_SetPriority(ADC_IRQn, 1, 4);
+    HAL_NVIC_EnableIRQ(ADC_IRQn);
 }
 
 
@@ -69,7 +71,9 @@ void Adc_init(void)
     ADC1_Handler.Init.ExternalTrigConv=ADC_SOFTWARE_START;       //软件触发
     ADC1_Handler.Init.ExternalTrigConvEdge=ADC_EXTERNALTRIGCONVEDGE_NONE; //使用软件触发
     ADC1_Handler.Init.DMAContinuousRequests=DISABLE;       		   //关闭DMA请求
-    HAL_ADC_Init(&ADC1_Handler);                           		   //初始化                               
+    HAL_ADC_Init(&ADC1_Handler);                           		   //初始化      
+
+    memset(adc_Queue,0x0,100);
 }
 
 
@@ -90,26 +94,42 @@ uint16_t GetAdcValue(uint8_t ch)
 
 
 
-
 /*******************************************************************************
 * 描述	    : 系统时钟100/S，即10mS间隔调用一次运行，获取ADC值给App层变量
 *******************************************************************************/
 void AdcSystick100Routine(void)
 {
-    Adc[0] = GetAdcValue(0);
-    
-    ADSum += Adc[0];
-    ADTick ++;
-    
-    if(ADTick == 100)
-    {
-        ADTick = 0;
-//        ADSum = 0;
-//        if(ADSum > 180000)
-        {
-			AppDataPointer->Adc.A0 = ADSum / 100;
+    static uint8_t ad_j = 0;
+    adc_Queue[ADTick ++] = GetAdcValue(0);
+    if(ADTick == 100){
+        ADTick = 99;
+        
+        for(ad_j=0;ad_j<98;ad_j++){
+            adc_Queue[ad_j] = adc_Queue[ad_j+1];
         }
+        adc_Queue[98] = adc_Queue[99];
+        for(ad_j=0;ad_j<100;ad_j++){
+            ADSum += adc_Queue[ad_j];
+        }
+        
+        AppDataPointer->Adc.A0 = ADSum / 100;
+        ADSum = 0;
     }
+//    Adc[0] = GetAdcValue(0);
+//    
+//    ADSum += Adc[0];
+//    ADTick ++;
+//    
+//    if(ADTick == 50)
+//    {
+//        ADTick = 0;
+////        ADSum = 0;
+////        if(ADSum > 180000)
+//        {
+//			AppDataPointer->Adc.A0 = ADSum / 50;
+//        }
+//        ADSum = 0;
+//    }
 }
 
 

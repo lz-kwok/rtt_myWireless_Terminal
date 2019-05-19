@@ -19,7 +19,7 @@
 #include "system.h"
 
 struct rt_timer soft_timer5;
-
+static char Timer_del = 0;
 
 char mulString1[20] = "ÅÌµã:";
 char mulString2[20] = "´æÅÌ:";
@@ -446,11 +446,11 @@ void HomePageShow(void)
   {
     if(AppDataPointer->Adc.A0 > 2500)           //??????
       GUI_LoadPic1(113,15,(uint8_t *)BAT_B3,13,7);
-    else if((AppDataPointer->Adc.A0 > 2250)&&(AppDataPointer->Adc.A0 <= 2500))
+    else if((AppDataPointer->Adc.A0 > 2350)&&(AppDataPointer->Adc.A0 <= 2450))
       GUI_LoadPic1(113,15,(uint8_t *)BAT_B2,13,7);
-    else if((AppDataPointer->Adc.A0 > 2050)&&(AppDataPointer->Adc.A0 <= 2250))
+    else if((AppDataPointer->Adc.A0 > 2150)&&(AppDataPointer->Adc.A0 <= 2300))
       GUI_LoadPic1(113,15,(uint8_t *)BAT_B1,13,7);
-    else if(AppDataPointer->Adc.A0 <= 2050)
+    else if(AppDataPointer->Adc.A0 <= 2100)
       GUI_LoadPic1(113,15,(uint8_t *)BAT_B0,13,7);
   }
 }
@@ -599,6 +599,11 @@ static void ForceMenuShow()
         ParaSetConfirm = 1;
         ModbusMasterAsk(SlaverAddr,40002,0x06,0x00,ForceSetIndex);
 
+        if(Timer_del == 1){
+            Timer_del = 0;
+            rt_timer_delete(&soft_timer5);
+        }
+
         rt_timer_init(&soft_timer5, "ParameterInqury",       
                           ParameterInqury,                          
                           RT_NULL,                                   
@@ -606,6 +611,7 @@ static void ForceMenuShow()
                           RT_TIMER_FLAG_ONE_SHOT);                     
                 
         rt_timer_start(&soft_timer5);
+        Timer_del = 1;
       }
    }
    else
@@ -646,6 +652,11 @@ static void InoutMenuShow()
         InOutValue = InOutIndex;
         FlashRsvWrite(&InOutValue,2,1);
 
+        if(Timer_del == 1){
+            Timer_del = 0;
+            rt_timer_delete(&soft_timer5);
+        }
+
         rt_timer_init(&soft_timer5, "ParameterInqury",       
                   ParameterInqury,                          
                   RT_NULL,                                   
@@ -653,6 +664,7 @@ static void InoutMenuShow()
                   RT_TIMER_FLAG_ONE_SHOT);                     
                 
         rt_timer_start(&soft_timer5);
+        Timer_del = 1;
       }
    }
    else
@@ -691,6 +703,11 @@ static void SpacingMenuShow(void)
         Spacing_L = (uint8_t)(SpacingIndex&0xFF);
         ModbusMasterAsk(SlaverAddr,40004,0x06,Spacing_H,Spacing_L);
 
+        if(Timer_del == 1){
+            Timer_del = 0;
+            rt_timer_delete(&soft_timer5);
+        }
+
         rt_timer_init(&soft_timer5, "ParameterInqury",       
                   ParameterInqury,                          
                   RT_NULL,                                   
@@ -698,6 +715,7 @@ static void SpacingMenuShow(void)
                   RT_TIMER_FLAG_ONE_SHOT);                     
                 
         rt_timer_start(&soft_timer5);
+        Timer_del = 1;
       }
    }
    else
@@ -739,6 +757,11 @@ static void lengthMenuShow(void)
         Length_L = (uint8_t)(LengthSetIndex&0xFF);
         ModbusMasterAsk(SlaverAddr,40005,0x06,Length_H,Length_L);
 
+        if(Timer_del == 1){
+            Timer_del = 0;
+            rt_timer_delete(&soft_timer5);
+        }
+
         rt_timer_init(&soft_timer5, "ParameterInqury",       
                   ParameterInqury,                          
                   RT_NULL,                                   
@@ -746,6 +769,7 @@ static void lengthMenuShow(void)
                   RT_TIMER_FLAG_ONE_SHOT);                     
                 
         rt_timer_start(&soft_timer5);
+        Timer_del = 1;
       }
    }
    else
@@ -780,6 +804,11 @@ static void MovementMenuShow(void)
         ParaSetConfirm = 1;
         ModbusMasterAsk(SlaverAddr,40006,0x06,0x00,MovementSetIndex);
 
+        if(Timer_del == 1){
+            Timer_del = 0;
+            rt_timer_delete(&soft_timer5);
+        }
+
         rt_timer_init(&soft_timer5, "ParameterInqury",       
                   ParameterInqury,                          
                   RT_NULL,                                   
@@ -787,6 +816,7 @@ static void MovementMenuShow(void)
                   RT_TIMER_FLAG_ONE_SHOT);                     
                 
         rt_timer_start(&soft_timer5);
+        Timer_del = 1;
       }
    }
    else
@@ -820,6 +850,10 @@ static void IndelayMenuShow()
       {
         ParaSetConfirm = 1;
         ModbusMasterAsk(SlaverAddr,40007,0x06,0x00,DelaySetIndex);
+        if(Timer_del == 1){
+            Timer_del = 0;
+            rt_timer_delete(&soft_timer5);
+        }
         rt_timer_init(&soft_timer5, "ParameterInqury",       
                         ParameterInqury,                          
                         RT_NULL,                                   
@@ -827,6 +861,7 @@ static void IndelayMenuShow()
                         RT_TIMER_FLAG_ONE_SHOT);                     
               
         rt_timer_start(&soft_timer5);
+        Timer_del = 1;
       }
    }
    else
@@ -860,6 +895,11 @@ static void OutnumMenuShow(void)
       {
         ParaSetConfirm = 1;
         ModbusMasterAsk(SlaverAddr,40030,0x06,0x00,OutNumIndex);
+
+        if(Timer_del == 1){
+            Timer_del = 0;
+            rt_timer_delete(&soft_timer5);
+        }
         rt_timer_init(&soft_timer5, "ParameterInqury",       
                   ParameterInqury,                          
                   RT_NULL,                                   
@@ -867,6 +907,7 @@ static void OutnumMenuShow(void)
                   RT_TIMER_FLAG_ONE_SHOT);                     
                 
         rt_timer_start(&soft_timer5);
+        Timer_del = 1;
       }
    }
    else
@@ -906,6 +947,12 @@ static void ABMenuShow(void)
         ModbusMasterAsk(SlaverAddr,40034,0x06,0x00,ABSetIndex);
         ABValue = ABSetIndex;
         FlashRsvWrite(&ABValue,0,1);
+
+        if(Timer_del == 1){
+            Timer_del = 0;
+            rt_timer_delete(&soft_timer5);
+        }
+        
         rt_timer_init(&soft_timer5, "ParameterInqury",       
                           ParameterInqury,                          
                           RT_NULL,                                   
@@ -913,6 +960,7 @@ static void ABMenuShow(void)
                           RT_TIMER_FLAG_ONE_SHOT);                     
                 
         rt_timer_start(&soft_timer5);
+        Timer_del = 1;
       }
    }
    else
@@ -1145,6 +1193,7 @@ void DelayTurnoff(void* parameter)
   if(TurnoffTick == TurnoffValue)
   {
     rt_timer_stop(&soft_timer3);
+    rt_timer_delete(&soft_timer3);
     CtrPowerOff();
   }
 }
